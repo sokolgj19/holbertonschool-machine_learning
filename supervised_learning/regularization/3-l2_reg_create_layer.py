@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-3-l2_reg_create_layer module
+3-l2_reg_create_layer.py
 
 Contains:
 - l2_reg_create_layer: creates a Dense layer with L2 regularization
@@ -22,11 +22,12 @@ def l2_reg_create_layer(prev, n, activation, lambtha):
     Returns:
     - tf.Tensor, output of the new layer
     """
-    return tf.keras.layers.Dense(
+    layer = tf.keras.layers.Dense(
         units=n,
         activation=activation,
         kernel_regularizer=tf.keras.regularizers.L2(l2=lambtha)
-    )(prev)
+    )
+    return layer(prev)
 
 
 def l2_reg_cost(cost, model):
@@ -43,8 +44,10 @@ def l2_reg_cost(cost, model):
     l2_costs = []
 
     for layer in model.layers:
+        # Only layers with kernel_regularizer count
         if hasattr(layer, "kernel_regularizer") and layer.kernel_regularizer:
             l2_penalty = layer.kernel_regularizer(layer.kernel)
             l2_costs.append(cost + l2_penalty)
 
+    # Stack all costs into a single tensor
     return tf.stack(l2_costs)
