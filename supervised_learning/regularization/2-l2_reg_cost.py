@@ -17,20 +17,17 @@ def l2_reg_cost(cost, model):
     - model: Keras model with layers that include L2 regularization
 
     Returns:
-    - tf.Tensor containing the total cost for each layer, including L2
+    - tf.Tensor containing the total cost for each layer with L2
     """
     l2_costs = []
 
+    # Only consider layers that have weights (skip input layer)
     for layer in model.layers:
-        # Check if layer has kernel_regularizer (weights)
         if hasattr(layer, "kernel_regularizer") and layer.kernel_regularizer:
-            # Add L2 penalty for this layer
+            # L2 penalty for this layer
             l2_penalty = layer.kernel_regularizer(layer.kernel)
-            l2_costs.append(l2_penalty)
-        else:
-            # No regularization for this layer
-            l2_costs.append(tf.constant(0.0, dtype=cost.dtype))
+            # Add to base cost
+            l2_costs.append(cost + l2_penalty)
 
-    # Convert list to tensor and add base cost
-    total_cost = tf.stack([cost + l2 for l2 in l2_costs])
-    return total_cost
+    # Return as a tensor
+    return tf.stack(l2_costs)
