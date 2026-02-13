@@ -25,19 +25,21 @@ def l2_reg_gradient_descent(Y, weights, cache, alpha, lambtha, L):
     Updates weights in place.
     """
     m = Y.shape[1]
-    dZ = cache["A" + str(L)] - Y  # Last layer gradient
+    dZ = cache["A" + str(L)] - Y  # Gradient of last layer (softmax)
 
     for layer in range(L, 0, -1):
         A_prev = cache["A" + str(layer - 1)]
         W = weights["W" + str(layer)]
 
-        # Gradient with respect to weights and bias
+        # Compute gradients with L2 regularization
         dW = (1 / m) * np.matmul(dZ, A_prev.T) + (lambtha / m) * W
         db = (1 / m) * np.sum(dZ, axis=1, keepdims=True)
 
-        # Update weights and bias in place
+        # Update weights and biases
         weights["W" + str(layer)] = W - alpha * dW
         weights["b" + str(layer)] = weights["b" + str(layer)] - alpha * db
 
         if layer > 1:
-            dZ = np.matmul(weights["W" + str(layer)].T, dZ) * (1 - A_prev ** 2)
+            # Use original W (before update) for backprop
+            W_prev = W.copy()
+            dZ = np.matmul(W_prev.T, dZ) * (1 - A_prev ** 2)
